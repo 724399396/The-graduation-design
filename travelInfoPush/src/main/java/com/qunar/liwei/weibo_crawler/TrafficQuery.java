@@ -20,6 +20,7 @@ public class TrafficQuery extends BreadthCrawler {
 		while (matcher.find())
 			result+=matcher.group();
 		outToFile(result);
+		//System.out.println(result);
 	}
 	private void outToFile(String str) {
 		File file = new File("流量.txt");
@@ -43,7 +44,7 @@ public class TrafficQuery extends BreadthCrawler {
 		//PHPSESSID=84e88ec48cbf9650042c39b2642b85d0
 	public static void main(String[] args) throws Exception  {
 		TrafficQuery query = new TrafficQuery();
-		query.setCookie("PHPSESSID=84e88ec48cbf9650042c39b2642b85d0");
+		query.setCookie("PHPSESSID=1bd76799b7903e74cc9f10037bd76b7c");
 		query.addSeed("http://zyzfw.xidian.edu.cn:8800/index.php");
 		query.addRegex(".*");
 		query.setThreads(1);
