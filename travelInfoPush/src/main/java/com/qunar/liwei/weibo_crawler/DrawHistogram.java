@@ -1,132 +1,90 @@
 package com.qunar.liwei.weibo_crawler;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
-import javax.imageio.ImageIO;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 
-/**
- * 柱状图
- *
- * @author lazy_p
- * @date 2010-3-20
- */
+
 public class DrawHistogram {
-    private final int histogramWidth = 15;// 柱形图的宽度
-    private final int histogramPitch = 10;// 柱形图的间距
-    private float scaling = 1f;// 缩放的比例
-    private int maxStrWidth = 0; // 字符串需要的最大宽度
+	
+	public static <T extends Number> void createHistogram(
+			 List<List<String>> words, List<List<T>> nums, List<String> title) {
+        int size = title.size();
+        for (int titleIndex = 0;titleIndex < size; titleIndex++) {
+        	DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        	String titleStr = title.get(titleIndex);
+        	List<String> word = words.get(titleIndex);
+        	List<T> num = nums.get(titleIndex);
+        	for (int wordIndex = 0; wordIndex < word.size(); wordIndex++) {
+        		dataset.addValue(num.get(wordIndex), "", word.get(wordIndex));    
+        	}
+        	JFreeChart chart = ChartFactory.createBarChart(titleStr,// 标题
+                     "(关键词) ",// x轴
+                     "(词频/词数)",// y轴
+                     dataset,// 数据
+                     PlotOrientation.VERTICAL,// 定位，VERTICAL：垂直
+                     false,// 是否显示图例注释(对于简单的柱状图必须是false)
+                     false,// 是否生成工具//没用过
+                     false);// 是否生成URL链接
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            CategoryItemRenderer renderer = plot.getRenderer();
+            renderer
+                  .setItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+            // renderer.setDrawOutlines(true);//是否折线数据点根据不同数据使用不同的形状
+            // renderer.setSeriesShapesVisible(0, true);
+            renderer.setSeriesItemLabelsVisible(0, Boolean.TRUE);
+            CategoryAxis domainAxis = plot.getDomainAxis();
+            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);// 倾斜45度
+            BarRenderer renderer1 = new BarRenderer();// 设置柱子的相关属性
+            // 设置柱子宽度
+            // renderer1.setMaximumBarWidth(0.9);
+            // renderer1.setMaximumBarWidth(0.10000000000000001D); //宽度
+            // 设置柱子高度
+            renderer1.setMinimumBarLength(0.5);
+            // 设置柱子边框颜色
+            // renderer1.setBaseOutlinePaint(Color.BLACK);
+            // 设置柱子边框可见
+            // renderer1.setDrawBarOutline(true);
+            // 设置每个地区所包含的平行柱的之间距离，数值越大则间隔越大，图片大小一定的情况下会影响柱子的宽度，可以为负数
+            renderer1.setItemMargin(0.1);
+            // 是否显示阴影
+           // renderer1.setShadowVisible(false);
+            // 阴影颜色
+            // renderer1.setShadowPaint(Color.white);
+            plot.setRenderer(renderer1);
+            plot.setBackgroundAlpha((float) 0.5); // 数据区的背景透明度（0.0～1.0）
+            // 设置柱的透明度
+            // plot.setForegroundAlpha(1.0f);
+            // 设置图形的宽度
+          //  CategoryAxis caxis = plot.getDomainAxis();
+            //输出文件  
+          FileOutputStream fos;
+	      String graphURL = "/home/liwei/javaCode/The-graduation-design/travelInfoPush/image/"+titleStr+".jpg";
+	      try {
+	       fos = new FileOutputStream(graphURL);
+	             //用ChartUtilities工具输出  
+	       ChartUtilities.writeChartAsJPEG(fos, chart, 800, 400);
+	             fos.close();  
+	      } catch (FileNotFoundException e) {
+	       e.printStackTrace();
+	      }   catch (IOException e) {
+	       e.printStackTrace();
+	      }
+        }       
+	}
 
-    /**
-     * <pre>
-     *   参数b[i]和str[i]必须对应
-     * </pre>
+ }
 
-     */
-    public BufferedImage paintPlaneHistogram(String title, double[] v,
-            String[] str, Color[] color) {
-        int width = str.length * histogramWidth+str.length*histogramPitch+100;
-        int height = 500;
-        scaling = calculateScale(v, height);//计算缩放比例
-        
-        BufferedImage bufferImage = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
-        Graphics g = bufferImage.getGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width, height);
-        FontMetrics metrics = null;
-
-        g.setFont(new Font(null, Font.BOLD, 30));
-        g.setColor(Color.RED);
-
-        g.drawString(title, (bufferImage.getWidth() - g.getFontMetrics()
-                .stringWidth(title)) >> 1, 30);// 画标题
-
-        g.setFont(new Font(null, Font.PLAIN, 12));
-
-        metrics = g.getFontMetrics();
-
-        g.setColor(Color.BLACK);
-
-        g.drawLine(70, 0, 70, height - 15); // 画Y坐标
-        g.drawLine(70, height - 15, width, height - 15);// 画X坐标
-        
-        int j = 0;
-        int colorCount=color.length;
-        
-        for (int i = 0; i < v.length; ++i) {
-
-            if (color != null){
-                g.setColor(color[j]);// 设置前景色
-                if(j+1<colorCount){
-                    j++;
-                }else{
-                    j=0;
-                }
-            }else{
-                g.setColor(Color.RED);
-            }
-
-            int x = 80 + i
-                    * (histogramPitch + histogramWidth + (maxStrWidth >> 1));// 计算出X坐标
-            int y = height - 16 - (int) (v[i] * scaling); // 计算出Y坐标
-
-            // 画占的比例
-//            g.drawString(v[i] + "", x
-//                    - ((metrics.stringWidth(v[i] + "") - histogramWidth) >> 1),
-//                    y);
-
-            // 画平面的柱状图
-            g.drawRect(x, y, histogramWidth, (int) (v[i] * scaling));
-            g.fillRect(x, y, histogramWidth, (int) (v[i] * scaling));
-
-            // 画每一项表示的东西
-            g.drawString(str[i], x
-                    - ((metrics.stringWidth(str[i]) - histogramWidth) >> 1),
-                    height - 2);
-        }
-        for (int yIndex = 0; yIndex <= 500; yIndex += 50){
-        	g.setFont(new Font(null, Font.LAYOUT_NO_LIMIT_CONTEXT, 10));
-            g.drawString(new Float(yIndex/scaling).toString(), 0, 500-yIndex);
-        }
-
-        return bufferImage;
-    }
-    
-    /**
-     * 计算缩放比例
-     * @param v
-     * @param h 图片的高度
-     * @return
-     */
-    public float calculateScale(double[] v , int h){
-        float scale = 1f;
-        double max = Float.MIN_VALUE;
-        for(int i=0 , len=v.length ; i < len ;++i){
-            if(v[i]>max){
-                max=v[i];
-            }
-        }
-        scale=((int)(h*1.0f/max*1000))*1.0f/1000;
-        return scale * 0.8f;
-    }
-	    
-    public static void main(String[] args)  {
-//        DrawHistogram planeHistogram = new DrawHistogram();
-//        
-//        BufferedImage image = planeHistogram.paintPlaneHistogram("颜色直方图",
-//                        new int[]{100,200,300}, new String[]{"a" , "b" , "c"} ,  new Color[] {Color.BLUE });
-//        File output = new File("F:\\code\\The-graduation-design\\image\\1.jpg");
-//        try {
-//            ImageIO.write(image, "jpg", output);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
-
-}
