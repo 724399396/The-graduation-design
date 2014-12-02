@@ -13,7 +13,6 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
@@ -26,7 +25,7 @@ public class HtmlUnitTest {
 	public static String loginAndGetCookie(String userID,String passwd){
 		String cookieString = "";
 		try {
-			final WebClient webClient = new WebClient(BrowserVersion.FIREFOX_24);
+			final WebClient webClient = new WebClient(BrowserVersion.CHROME);
 			webClient.getOptions().setCssEnabled(false);
 			webClient.getOptions().setJavaScriptEnabled(false);
 			HtmlPage htmlPage = webClient.getPage("http://login.weibo.cn/login/");	
