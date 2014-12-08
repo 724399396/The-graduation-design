@@ -17,4 +17,8 @@ public class FileUtilsTest {
 		FileUtils.listAllFile(new File("./src/resource/data"), fileList);
 		assertThat(fileList.size(), is(2));
 	}
+	@Test
+	public void storeImage() {
+		
+	}
 }
