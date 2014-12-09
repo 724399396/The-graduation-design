@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -24,6 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+
 
 
 
@@ -48,13 +50,20 @@ public class PointOnePersonWeiboCrawler {
 	private static AtomicReference<String> mainName = new AtomicReference<String>();
 	private static String maxTime;
 	private static String minTime;
-	private static AtomicLong id;
+	private static AtomicLong id = new AtomicLong();
 	
 	private static class MainPersonCrawler implements Runnable {
 		public void run() {
 			while(!Thread.interrupted()) {
 				try{
+					System.out.println("主线程" + id.incrementAndGet());
 					String url = mainPersonUrl.take();
+					int pageNum = Integer.parseInt(
+							url.substring(url.lastIndexOf("=") + 1));
+					if (pageNum % 100 == 0) {
+						System.out.println(url);
+						TimeUnit.MINUTES.sleep(5);
+					}
 					System.out.println("fetch: " + url);
 					String bodyAsString = getResponse(url);
 					processHtmlMain(bodyAsString);
@@ -74,8 +83,15 @@ public class PointOnePersonWeiboCrawler {
 		public void run() {
 			while(!Thread.interrupted()) {
 				try{
+					System.out.println("辅线程" + id.incrementAndGet());
 					String url = subPersonUrl.take();
-					System.out.println("fetch: " + url);
+					int pageNum = Integer.parseInt(
+							url.substring(url.lastIndexOf("=") + 1));
+					if (pageNum % 10 == 0) {
+						System.out.println(url);
+						TimeUnit.MINUTES.sleep(2);
+					}
+					System.out.println("fetchs: " + url);
 					String bodyAsString = getResponse(url);
 					processHtmlSub(bodyAsString);
 				} catch (InterruptedException e) {
@@ -113,7 +129,6 @@ public class PointOnePersonWeiboCrawler {
     	Pattern imagePattern = Pattern.compile("\"([\\d\\w\\S]+)u=([\\d\\w\\S]+)\">原图</a>");
     	Matcher imageMatcher = imagePattern.matcher(body);
 		while (imageMatcher.find()) {
-			System.out.println(imageMatcher.group(2));
 			DataAbout.saveImageUrl("http://ww4.sinaimg.cn/large/"+ imageMatcher.group(2)+".jpg");
 //    		Calendar cal = Calendar.getInstance();
 //    		fetchImageAndStoreInDisk("http://ww4.sinaimg.cn/large/"+ matcher.group(2)+".jpg", 
@@ -130,17 +145,15 @@ public class PointOnePersonWeiboCrawler {
 	    		info += infoMatcher.group(1);   	
     		}
     		info = info.replaceAll("&nbsp;", " ");
-    		System.out.println(info);
     		int timeStartIndex = info.lastIndexOf("收藏");
     		int timeEndIndex = info.lastIndexOf("来自");
     		String time = info.substring(
     				timeStartIndex + 3, timeEndIndex-1);
     		time = ParseString.processTime(time);
-    		System.out.println(time);
     		if (minTime != null && maxTime != null 
     				&& time.compareTo(maxTime) <= 0 && time.compareTo(minTime) >= 0) {
     			System.out.println("返回");
-    			return;   	
+    			break;   	
     			
     		}
     		parseWeiboInfoAndStore(mainName.get(),info, time, true);
@@ -157,7 +170,6 @@ public class PointOnePersonWeiboCrawler {
     	Pattern imagePattern = Pattern.compile("\"([\\d\\w\\S]+)u=([\\d\\w\\S]+)\">原图</a>");
     	Matcher imageMatcher = imagePattern.matcher(body);
 		while (imageMatcher.find()) {
-			System.out.println(imageMatcher.group(2));
 			DataAbout.saveImageUrl("http://ww4.sinaimg.cn/large/"+ imageMatcher.group(2)+".jpg");
 //    		Calendar cal = Calendar.getInstance();
 //    		fetchImageAndStoreInDisk("http://ww4.sinaimg.cn/large/"+ matcher.group(2)+".jpg", 
@@ -174,13 +186,11 @@ public class PointOnePersonWeiboCrawler {
 	    		info += infoMatcher.group(1);   	
     		}
     		info = info.replaceAll("&nbsp;", " ");
-    		System.out.println(info);
     		int timeStartIndex = info.lastIndexOf("收藏");
     		int timeEndIndex = info.lastIndexOf("来自");
     		String time = info.substring(
     				timeStartIndex + 3, timeEndIndex-1);
     		time = ParseString.processTime(time);
-    		System.out.println(time);
     		if (minTime != null && maxTime != null 
     				&& time.compareTo(maxTime) <= 0 && time.compareTo(minTime) >= 0)
     			return;      	
@@ -218,22 +228,23 @@ public class PointOnePersonWeiboCrawler {
 	
 	 private void fetchImageAndStoreInDisk(String imageUrl, String storePath) {
 	    	try {
-	    	URL url = new URL(imageUrl);
-	    	File file = new File(storePath);
-	    	boolean fileNotExist = !file.exists();
-	    	boolean mkdirFalse = true;
-	    	if (fileNotExist)
-	    		mkdirFalse = !file.mkdirs();
-	    	if (fileNotExist && mkdirFalse)
-	    		throw new RuntimeException("mkdirs false");
-	    	OutputStream out =new FileOutputStream(new File(file.getAbsolutePath()
-	    			+ "/"+id.incrementAndGet()+".jpg"));
-	    	InputStream in = url.openStream();
-	    	byte[] buffer = new byte[1024];
-	    	int len = 0;    
-	        while ((len = in.read(buffer)) != -1) {    
-	            out.write(buffer, 0, len);    
-	        }    
+		    	URL url = new URL(imageUrl);
+		    	File file = new File(storePath);
+		    	boolean fileNotExist = !file.exists();
+		    	boolean mkdirFalse = true;
+		    	if (fileNotExist)
+		    		mkdirFalse = !file.mkdirs();
+		    	if (fileNotExist && mkdirFalse)
+		    		throw new RuntimeException("mkdirs false");
+		    	OutputStream out =new FileOutputStream(new File(file.getAbsolutePath()
+		    			+ "/"+id.incrementAndGet()+".jpg"));
+		    	InputStream in = url.openStream();
+		    	byte[] buffer = new byte[1024];
+		    	int len = 0;    
+		        while ((len = in.read(buffer)) != -1) {    
+		            out.write(buffer, 0, len);    
+		        }   
+		        out.close();
 	    	} catch (FileNotFoundException e) {
 	    		e.printStackTrace();
 	    	} catch (MalformedURLException e) {
@@ -252,13 +263,13 @@ public class PointOnePersonWeiboCrawler {
 			pushToFetchList(subPersonUrl, matcher.group(1), 1);
 		matcher = Pattern.compile("<a href=\"([\\S]+)\">[\\S]+</a><br/>粉丝").matcher(follow);
 		while (matcher.find())
-			pushToFetchList(subPersonUrl, matcher.group(1), 30);
+			pushToFetchList(subPersonUrl, matcher.group(1), 10);
 	}
 	
 	private static void pushToFetchList(
 			BlockingQueue<String> queue,String url, int pageTotal) {
 		try {
-			for (int pageIndex = 1; pageIndex <= pageTotal; pageIndex++)
+			for (int pageIndex = 215; pageIndex <= pageTotal; pageIndex++)
 				queue.put(url + "?page=" +pageIndex);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -268,13 +279,15 @@ public class PointOnePersonWeiboCrawler {
 	public static void main(String[] args) throws ClientProtocolException, IOException, InterruptedException {
 		maxTime = DataAbout.getMaxTime();
 		minTime = DataAbout.getMinTime();
+		System.out.println(maxTime + "-" + minTime);
+		mainName.set("梁斌penny");
 		ExecutorService exec = Executors.newFixedThreadPool(8);
-		//for (int i = 0; i < 4; i++)	
+		for (int i = 0; i < 1; i++)	
 			exec.execute(new MainPersonCrawler());
-		pushToFetchList(mainPersonUrl, "http://weibo.cn/pennyliang", 500);
+		pushToFetchList(mainPersonUrl, "http://weibo.cn/pennyliang", 1000);
 		while(mainName.get() == null)
 			;
-//		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 2; i++)
 			exec.execute(new SubPersonCrawler());
 		for (int followIndex = 1; followIndex <= 20; followIndex++)
 			parsePage("http://weibo.cn/1497035431/follow?page=" + followIndex);

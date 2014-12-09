@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.qunar.liwei.graduation.weibo_crawler.weiboMapper">
+	<insert id="addWeibo" parameterType="Weibo">
+		insert into sinaweibo_main_user
+		values(null,#{userName}, #{text}, #{type}, #{from}, #{time})
+	</insert>
+	
+	<insert id="saveImgUrl" parameterType="String">
+		insert into sinaweibo_image
+		values(null, #{url})
+	</insert>
+	
+	<select id="getMinDate" parameterType="String" resultType="String">
+		select MIN(time) from sinaweibo_main_user
+		where userName = #{userName}
+	</select>
+	
+	<select id="getMaxDate" parameterType="String" resultType="String">
+		select MAX(time) from sinaweibo_main_user
+		where userName = #{userName}
+	</select>
+</mapper>

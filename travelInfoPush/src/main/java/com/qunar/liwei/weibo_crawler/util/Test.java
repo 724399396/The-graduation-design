@@ -1,11 +1,16 @@
 package com.qunar.liwei.weibo_crawler.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,9 +21,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -125,19 +132,15 @@ public class Test {
 //								'./src/resource/download/1.jpg');
         
 
-		System.out.println(mainName.get());
-    	mainName.set("梁斌penny");
-    	System.out.println(mainName.get());
-    	
-    	new Thread() {
-    		public void run() {
-    			System.out.println(mainName.get());
-    		}
-    	}.start();
-    	
+		
 //    	String date = DataAbout.getLastedTime();
 //    	System.out.println(date);
-	
+		File file = new File("F:\\code\\The-graduation-design\\travelInfoPush\\src\\resource\\data\\n_a_filter");
+		for (File f : file.listFiles())
+			new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(
+							new File("F:\\code\\The-graduation-design\\travelInfoPush\\src\\resource\\image\\直方图_2014.12.8\\n_a_filter\\" 
+									+ f.getName() +".png"))));
 	}
 
 }

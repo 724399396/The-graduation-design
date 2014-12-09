@@ -13,7 +13,8 @@ public class DataAbout {
 	private static final String url = "jdbc:mysql://127.0.0.1:3306/sinaweibo?useUnicode=true&characterEncoding=UTF-8";
 	private static final String user = "root";
 	private static final String password = "ckart001753983";
-	private static String lastedTime;
+	private static String maxTime;
+	private static String minTime;
 	
 	private static Connection conn;
 	
@@ -88,13 +89,13 @@ public class DataAbout {
 		Statement stam = null;
 		ResultSet rs = null;
 		try {
-			if (lastedTime != null)
-				return lastedTime;
+			if (maxTime != null)
+				return maxTime;
 			stam = conn.createStatement();
 			rs = stam.executeQuery("SELECT MAX(time) FROM sinaweibo.sinaweibo_main_user");
 			if(rs.next()) {				
-				lastedTime = rs.getString(1);
-				return lastedTime;
+				maxTime = rs.getString(1);
+				return maxTime;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -115,13 +116,13 @@ public class DataAbout {
 		Statement stam = null;
 		ResultSet rs = null;
 		try {
-			if (lastedTime != null)
-				return lastedTime;
+			if (minTime != null)
+				return minTime;
 			stam = conn.createStatement();
 			rs = stam.executeQuery("SELECT MIN(time) FROM sinaweibo.sinaweibo_main_user");
 			if(rs.next()) {				
-				lastedTime = rs.getString(1);
-				return lastedTime;
+				minTime = rs.getString(1);
+				return minTime;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
