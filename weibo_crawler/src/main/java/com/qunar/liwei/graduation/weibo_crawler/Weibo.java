@@ -1,8 +1,14 @@
 package com.qunar.liwei.graduation.weibo_crawler;
 
-public class Weibo {
+import java.io.Serializable;
+
+public class Weibo implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5570192519696895557L;
 	private String userName;
-	private String text;
+	private String commontText;
 	private String type;
 	private String from;
 	private String time;
@@ -16,12 +22,11 @@ public class Weibo {
 	public Weibo() {
 		super();
 	}
-	
-	public Weibo(String userName, String text, String type, String from,
-			String time, String imageUrl) {
+	public Weibo(String userName, String commontText, String type, String from,
+			String time, String imageUrl, String follows) {
 		super();
 		this.userName = userName;
-		this.text = text;
+		this.commontText = commontText;
 		this.type = type;
 		this.from = from;
 		this.time = time;
@@ -33,11 +38,12 @@ public class Weibo {
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
-	public String getText() {
-		return text;
+	
+	public String getCommontText() {
+		return commontText;
 	}
-	public void setText(String text) {
-		this.text = text;
+	public void setCommontText(String commontText) {
+		this.commontText = commontText;
 	}
 	public String getType() {
 		return type;
@@ -59,11 +65,8 @@ public class Weibo {
 	}
 	@Override
 	public String toString() {
-		return "Weibo [userName=" + userName + ", text=" + text + ", type="
-				+ type + ", from=" + from + ", time=" + time + ", imagrUrl="
-				+ imageUrl + "]\n";
-	}
-	
-	
-	
+		return "Weibo [userName=" + userName + ", commontText=" + commontText
+				+ ", type=" + type + ", from=" + from + ", time=" + time
+				+ ", imageUrl=" + imageUrl + "]\n";
+	}		
 }

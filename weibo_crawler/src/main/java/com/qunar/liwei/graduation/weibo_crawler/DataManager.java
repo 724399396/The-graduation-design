@@ -2,14 +2,21 @@ package com.qunar.liwei.graduation.weibo_crawler;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+import com.qunar.liwei.graduation.weibo_crawler.util.EmojiFilter;
 
-public class DataManager {
+
+public class DataManager implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4426822852419649539L;
 	static SqlSession session;
 	
 	static {
@@ -30,24 +37,38 @@ public class DataManager {
 	
 	public int saveWeibo(Weibo weibo) {
 		String statement = 
-				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.addWeibo";
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.saveWeibo";
+		weibo.setCommontText(EmojiFilter.emojiFilt(weibo.getCommontText()));
 		int insertNums = session.insert(statement, weibo);
 		session.commit();
 		return insertNums;
 	}
-	
-	public int saveImage(String imgUrl) {
+		
+	public int saveFollow(WeiboUser weiboUser) {
 		String statement = 
-				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.saveImgUrl";
-		int insertNums = session.insert(statement, imgUrl);
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.saveFollow";
+		if (weiboUser.getFollowsUrl() == null)
+			return 0;
+		if (isFollowSaved(weiboUser))
+			return 0;
+		int insertNums = session.insert(statement, weiboUser);
 		session.commit();
 		return insertNums;
+	}
+	
+	private boolean isFollowSaved(WeiboUser weiboUser) {
+		String statement = 
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.isFollowSaved";
+		String name = session.selectOne(statement, weiboUser);
+		session.commit();
+		return name == null ? false : true;
 	}
 	
 	public String getMaxDate(String userName) {
 		String statement = 
 				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.getMaxDate";
 		String Date = session.selectOne(statement, userName);
+		session.commit();
 		return Date;
 	}
 	
@@ -55,7 +76,16 @@ public class DataManager {
 		String statement = 
 				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.getMinDate";
 		String Date = session.selectOne(statement, userName);
+		session.commit();
 		return Date;
+	}
+	
+	public boolean isWeiboExist(Weibo weibo) {
+		String statement = 
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.isWeiboExist";
+		Integer count = session.selectOne(statement, weibo);
+		session.commit();
+		return count > 0 ? true : false;
 	}
 	
 }

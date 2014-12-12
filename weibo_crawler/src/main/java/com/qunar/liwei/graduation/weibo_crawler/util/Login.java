@@ -63,7 +63,7 @@ public class Login {
 //				cookieString += str + "=" +cookie.getValue() + ";";	
 //			}
 //			cookieString=cookieString.substring(0, cookieString.length()-1);
-			
+			System.out.println("获取cookie成功");
 		} catch (FailingHttpStatusCodeException e) {
 			System.err.println("Falt status code");
 			e.printStackTrace();
@@ -78,7 +78,24 @@ public class Login {
 		return cookiesAsMap;
 	}
 	
+	public static Map<String,String> getCookie() {
+		Map<String,String> cookiesAsMap = new LinkedHashMap<>();
+		cookiesAsMap.put("_T_WM", "a40f711f777c779bc7dc8aa07f5bc28e");
+		cookiesAsMap.put("SUB", "_2A255jrcgDeTxGeNN71QZ9yjKyz6IHXVbcNlorDV6PUJbrdBeLRb5kW0ewpAlxL9Yh2rrVXNbRnLbFWRxYw..");
+		cookiesAsMap.put("gsid_CTandWM", "4utke7771As3c8ITRpWWLmqXW9I");
+		return cookiesAsMap;
+	}
+	
+	public static Map<String,String> getAnotherCookie() {
+		Map<String,String> cookiesAsMap = new LinkedHashMap<>();
+		cookiesAsMap.put("_T_WM", "a40f711f777c779bc7dc8aa07f5bc28e");
+		cookiesAsMap.put("SUB", "_2A255j3DpDeTxGeNN6FQQ8ynPyjuIHXVbcBChrDV6PUJbrdAKLXbCkW0UCMWuPZpbi5IjvSsSpGKniAyu8g..");
+		cookiesAsMap.put("gsid_CTandWM", "4umX6d5612iUjLJqsCUhjmoaJ57");
+		return cookiesAsMap;
+	}
+	
 	public static void main(String[] args) {
-		loginAndGetCookie("181212631@163.com", "wwee13");
+		//loginAndGetCookie("181212631@163.com", "wwee13");
+		System.out.println(loginAndGetCookie("dayong213@163.com", "wwee13"));
 	}
 }
