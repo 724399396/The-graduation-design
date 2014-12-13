@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -62,7 +63,7 @@ public class DataManagerTest {
 		assertThat(maxDate, is("2014-12-08 20:52"));
 	}
 	
-	@Test
+	//@Test
 	public void testIsWeiboExist() {
 		WeiboUser user = new WeiboUser("http://weibo.cn/pennyliang", null, "巨鹿曹阳", null, null);
 		Weibo weibo = new Weibo("巨鹿曹阳", 
@@ -78,6 +79,16 @@ public class DataManagerTest {
 		Weibo weibo = new Weibo("梁斌" ,"微博招亲啦[喜]：乐乐，泰迪贵宾，女，四岁半。有车[小汽车]有房🏡，[钱]有存款。家里的掌上明珠，大家闺秀，多才多艺，性格温顺可人！经过家庭会议👪，打算给乐乐招名：[男孩]英俊潇洒，体型稍微偏小，聪明伶俐，大眼睛毛色棕红色的帅哥一枚！[相爱]完成人生大事，升级做妈妈！限于北京的宝贝们[狗] "
 		,"转发", "转发", "2014-04-19 11:56",null, null);
 		dataManager.saveWeibo(weibo);
+	}
+	
+	@Test
+	public void testBugFix() {
+		List<Bug> bugList = dataManager.bugFixSelect();
+		//System.out.println(bugList.get(0));
+		for (Bug bug : bugList) {
+			bug.bugFix();
+			dataManager.bugFixUpdate(bug);
+		}
 	}
 	
 }

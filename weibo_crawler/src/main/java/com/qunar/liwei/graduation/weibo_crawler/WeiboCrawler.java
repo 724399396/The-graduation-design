@@ -17,6 +17,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import com.qunar.liwei.graduation.weibo_crawler.util.HtmlPageParse;
 
@@ -139,16 +143,34 @@ public class WeiboCrawler {
 	public static void main(String[] args) throws InterruptedException, IOException, ClassNotFoundException {
 		//urls.put("http://weibo.cn/pennyliang");
 		deSerialazer();
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				try {
+					FileHandler fh = new FileHandler("exception_log.txt", true);
+					fh.setFormatter(new SimpleFormatter());//输出格式
+					Logger logger = Logger.getAnonymousLogger();
+					logger.addHandler(fh);
+					logger.log(Level.SEVERE, 
+							"Thread terminated with exception: " + t.getName()
+							+ " cause by" + e.getCause());
+				} catch (SecurityException | IOException e1) {
+					System.err.println("建立日志文件失败");
+					e1.printStackTrace();
+				}
+				
+			}
+		});
 		ExecutorService exec = Executors.newFixedThreadPool(3);	
 		exec.execute(new Filler());
 		exec.execute(new Fetcher());
 		exec.execute(new Saver());
 		Timer timer = new Timer();
 		timer.schedule(new Serializer(), 0, 1 * 60000);
-		Thread.sleep(50000);
-		while (!(urls.isEmpty() && weibos.isEmpty() && users.isEmpty()))
-			;
-		exec.shutdownNow();
-		exec.awaitTermination(30, TimeUnit.SECONDS);
+//		Thread.sleep(50000);
+//		while (!(urls.isEmpty() && weibos.isEmpty() && users.isEmpty()))
+//			;
+//		exec.shutdownNow();
+//		exec.awaitTermination(30, TimeUnit.SECONDS);
 	}
 }

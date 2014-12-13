@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,10 +20,11 @@ import org.jsoup.nodes.Document;
 import com.qunar.liwei.graduation.weibo_crawler.util.EmojiFilter;
 import com.qunar.liwei.graduation.weibo_crawler.util.HtmlPageParse;
 import com.qunar.liwei.graduation.weibo_crawler.util.Login;
+import com.qunar.liwei.graduation.weibo_crawler.util.LoopList;
 
 public class Test {
 	@SuppressWarnings("unchecked")
-	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException, InterruptedException {
 
 		ObjectInputStream in = new ObjectInputStream(
 				new FileInputStream("users.out"));
@@ -51,22 +54,32 @@ public class Test {
 		//System.out.println(isNew());
 //		String emoji = "我发表了博客：《字符编码的那些事——原来C#、Java的一个char并不是对应一个显示字符》。讲述了C#中一个char存不下的“𪚥”字，以及排版破坏神器“ส้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้้”的形成，也介绍了怎么用C#来处理这些奇葩。http://t.cn/zTUzve5";
 //		System.out.println(EmojiFilter.emojiFilt(emoji));
-		List<Map<String,String>> cookiesAsMapList = new LinkedList<>();
-		cookiesAsMapList.add(Login.loginAndGetCookie("181212631@163.com", "wwee13"));
-		cookiesAsMapList.add(Login.getCookie());
-		cookiesAsMapList.add(Login.getAnotherCookie());
-
-		int cookieIndex = 0;
+//		LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
+//		cookiesAsMapList.add(Login.loginAndGetCookie("181212631@163.com", "wwee13"));
+//		cookiesAsMapList.add(Login.getCookie());
+//		cookiesAsMapList.add(Login.getAnotherCookie());
+//
+//		int cookieIndex = 0;
+//		
+//		for(cookieIndex = 0; cookieIndex < 6; cookieIndex++) {
+//			Map<String,String> cookie = cookiesAsMapList.next();
+//			Document doc = Jsoup.connect("http://weibo.cn/pennyliang?page=10"+cookieIndex)
+//					  .userAgent("Mozilla")
+//					  .cookies(cookie)
+//					  .timeout(20000)
+//					  .get();
+//			System.out.println(cookie);
+//			System.out.println(doc.text());
+//		}
+//		LoopList<Integer> cookiesOfDiffUsers
+//			= new LoopList<>();
+//		cookiesOfDiffUsers.add(1);
+//		cookiesOfDiffUsers.add(2);
+//		cookiesOfDiffUsers.add(3);
+//		while(true) {
+//			System.out.println(cookiesOfDiffUsers.next());
+//		}
 		
-		for(cookieIndex = 0; cookieIndex < 3; cookieIndex++) {
-			Document doc = Jsoup.connect("http://weibo.cn/pennyliang?page=10")
-					  .userAgent("Mozilla")
-					  .cookies(cookiesAsMapList.get(cookieIndex))
-					  .timeout(20000)
-					  .get();
-			System.out.println(cookieIndex);
-			System.out.println(doc.text());
-		}
 	}
 	
 	private static boolean isNew(){

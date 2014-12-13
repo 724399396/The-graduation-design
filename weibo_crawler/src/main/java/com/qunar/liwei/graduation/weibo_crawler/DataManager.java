@@ -3,6 +3,7 @@ package com.qunar.liwei.graduation.weibo_crawler;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.util.List;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -86,6 +87,21 @@ public class DataManager implements Serializable {
 		Integer count = session.selectOne(statement, weibo);
 		session.commit();
 		return count > 0 ? true : false;
+	}
+	
+	public List<Bug> bugFixSelect() {
+		String statement = 
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.bugFixSelect";
+		List<Bug> list = session.selectList(statement);
+		session.commit();
+		return list;
+	}
+	public int bugFixUpdate(Bug bug) {
+		String statement = 
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.bugFixUpdate";
+		int update = session.update(statement, bug);
+		session.commit();
+		return update;
 	}
 	
 }

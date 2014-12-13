@@ -83,7 +83,7 @@ public class HtmlPageParse {
 							cookieIndex = 0;
 					}
 				} 
-				TimeUnit.MINUTES.sleep(1);
+				TimeUnit.SECONDS.sleep(30);
 			}
 			doc = Jsoup.connect(url)
 					  .userAgent("Mozilla")
@@ -125,7 +125,7 @@ public class HtmlPageParse {
 		for (Element image : images) {
 			String imageSourceUrl = image.toString();
 			String imageId = imageSourceUrl.substring(
-					imageSourceUrl.lastIndexOf("="), imageSourceUrl.lastIndexOf("\""));
+					imageSourceUrl.lastIndexOf("=") + 1, imageSourceUrl.lastIndexOf("\""));
 			weibo.setImageUrl("http://ww2.sinaimg.cn/large/" 
 					+ imageId + ".jpg");
 		}
