@@ -1,23 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 <mapper namespace="com.qunar.liwei.graduation.weibo_crawler.weiboMapper">
-	<insert id="addWeibo" parameterType="Weibo">
-		insert into sinaweibo_main_user
-		values(null,#{userName}, #{text}, #{type}, #{from}, #{time})
+	<cache/>
+	<insert id="saveWeibo" parameterType="Weibo" flushCache="true">
+		insert into sinaweibo_data
+		values(null,#{userName},#{commontText}, 
+		#{type},#{from},#{time},#{imageUrl})
 	</insert>
 	
-	<insert id="saveImgUrl" parameterType="String">
-		insert into sinaweibo_image
-		values(null, #{url})
+	<insert id="saveFollow" parameterType="WeiboUser" flushCache="true">
+		insert into sinaweibo_follow
+		values(null,#{name},#{followsName})
 	</insert>
+	
+	<select id="isFollowSaved" parameterType="WeiboUser" resultType="String">
+		SELECT `userName` FROM sinaweibo_follow 
+		WHERE userName=#{name};
+	</select>
 	
 	<select id="getMinDate" parameterType="String" resultType="String">
-		select MIN(time) from sinaweibo_main_user
-		where userName = #{userName}
+		select MIN(time) from sinaweibo_data
+		where userName=#{userName}
 	</select>
 	
 	<select id="getMaxDate" parameterType="String" resultType="String">
-		select MAX(time) from sinaweibo_main_user
-		where userName = #{userName}
+		select MAX(time) from sinaweibo_data
+		where userName=#{userName}
 	</select>
+	
+	<select id="isWeiboExist" parameterType="Weibo" resultType="Integer">
+		SELECT Count(id) FROM sinaweibo_data
+		WHERE userName=#{userName} AND commentText=#{commontText} AND
+		type=#{type} AND time=#{time}
+	</select>
+	
+	<select id="bugFixSelect" resultMap="resultMap">
+		SELECT id, imageUrl FROM sinaweibo_data
+		WHERE imageUrl IS NOT NULL
+	</select>
+	<resultMap type="Bug" id="resultMap">
+		<id property="id"  column="id"></id>
+		<result property="imageUrl" column="imageUrl"></result>
+	</resultMap>
+	<update id="bugFixUpdate" parameterType="Bug">
+		UPDATE sinaweibo_data
+		SET imageUrl = #{imageUrl} 
+		WHERE id = #{id}
+	</update>
 </mapper>

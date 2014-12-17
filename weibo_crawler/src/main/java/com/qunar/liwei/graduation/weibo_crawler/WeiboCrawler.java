@@ -141,8 +141,8 @@ public class WeiboCrawler {
 	}
 	
 	public static void main(String[] args) throws InterruptedException, IOException, ClassNotFoundException {
-		//urls.put("http://weibo.cn/pennyliang");
-		deSerialazer();
+		urls.put("http://weibo.cn/pennyliang");
+		//deSerialazer();
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread t, Throwable e) {
