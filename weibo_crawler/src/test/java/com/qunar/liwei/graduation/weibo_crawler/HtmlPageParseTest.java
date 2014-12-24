@@ -1,22 +1,23 @@
 package com.qunar.liwei.graduation.weibo_crawler;
 
-import java.io.IOException;
-import java.util.List;
+import org.jsoup.nodes.Document;
+
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.qunar.liwei.graduation.weibo_crawler.util.HtmlPageParse;
+
 
 public class HtmlPageParseTest {
-	//@Test
-	public void testWeiboList() throws IOException {
-		List<Weibo> weiboList = HtmlPageParse.
-				getWeiboList("http://weibo.cn/pennyliang");
-		System.out.println(weiboList);
-		
-	}
-	
-	@Test
-	public void parseMain() throws IOException {
-	}
+        //@Test
+        public void testGetDoc() {
+                Document doc = HtmlPageParse.getDoc("http://weibo.cn/u/1497035431");
+                assertNotNull(doc);
+        }
+
+        @Test
+        public void testGetWeiboList() {
+                System.out.println(
+                                PageParse.getWeibosFromPage("http://weibo.cn/pennyliang?page=1"));
+        }
 }

@@ -37,26 +37,28 @@ public class WordFilter {
 //			if (f.getName().contains("TFIDF")) {
 			String preStr = "";
 			int nums = 0;
+			Map<String,Double> map = new HashMap<>();
 			while((lineTxt = in.readLine())!= null) {
 				nums++;
 				if (lineTxt.matches("^[\\d]+$"))	// 空数据则继续下一条
 					continue;
 				lineTxt = lineTxt.replaceFirst("[\\d]+\t", ""); // 去除头部的 ID
+				lineTxt = lineTxt.replaceAll("\t[^(\u4E00-\u9FA5)]*=[\\S]+", ""); //去除错误
+				lineTxt = lineTxt.replaceAll("^[^(\u4E00-\u9FA5)]*=[\\S]+", "");//去除错误
 				lineTxt = lineTxt.replaceAll("\t", " ");	// 转化为scanner
 				lineTxt = lineTxt.replaceAll("=", " ");		// 方便处理的格式
-				preStr += lineTxt + " ";
-			}
-			Map<String,Double> map = new HashMap<>();
-			Scanner sc = new Scanner(preStr);		
-			// 合并重复
-			while (sc.hasNext()) {
-				String str = sc.next();
-				double times = sc.nextDouble();
-				Double old = map.get(str);
-				Double totalOld = total.get(str);
-				map.put(str, old == null ? times / nums : ((double)old + (times / nums)));
-				total.put(str, totalOld == null ? times / nums : ((double)totalOld + (times / nums)));
-			}
+				Scanner sc = new Scanner(preStr);		
+				// 合并重复
+				while (sc.hasNext()) {
+					String str = sc.next();
+					double times = sc.nextDouble();
+					Double old = map.get(str);
+					Double totalOld = total.get(str);
+					map.put(str, old == null ? times / nums : ((double)old + (times / nums)));
+					total.put(str, totalOld == null ? times / nums : ((double)totalOld + (times / nums)));
+				}
+				sc.close();
+			}	
 			// 排序
 			List<Map.Entry<String, Double>> entrys 
 				= new ArrayList<>(map.entrySet());

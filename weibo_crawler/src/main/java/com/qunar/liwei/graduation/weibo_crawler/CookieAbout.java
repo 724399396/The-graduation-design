@@ -1,4 +1,4 @@
-package com.qunar.liwei.graduation.weibo_crawler.util;
+package com.qunar.liwei.graduation.weibo_crawler;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 
 
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -23,9 +24,21 @@ import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.util.Cookie;
+import com.qunar.liwei.graduation.weibo_crawler.util.LoopList;
 
-public class Login {
+/**
+ * 用来存储所有Cookie相关的类
+ * @author li-wei
+ *
+ */
+public class CookieAbout {
 	
+	/**
+	 * 通过HtmlUnit模拟的方式来登陆并拿到Cookie
+	 * @param userID
+	 * @param passwd
+	 * @return
+	 */
 	public static Map<String,String> 
 			loginAndGetCookie(String userID,String passwd){
 		Map<String,String> cookiesAsMap = new LinkedHashMap<>();
@@ -55,15 +68,7 @@ public class Login {
 			cookies = cookieMa.getCookies();
 			for (Cookie cookie : cookies)
 				cookiesAsMap.put(cookie.getName(), cookie.getValue());
-//			cookieName.add("_T_WM");
-//			cookieName.add("SUB");
-//			cookieName.add("gsid_CTandWM");
-//			for (String str : cookieName) {
-//				cookie = cookieMa.getCookie(str);
-//				cookieString += str + "=" +cookie.getValue() + ";";	
-//			}
-//			cookieString=cookieString.substring(0, cookieString.length()-1);
-			System.out.println("获取cookie成功");
+			System.out.println("登陆账号1,获取cookie成功");
 		} catch (FailingHttpStatusCodeException e) {
 			System.err.println("Falt status code");
 			e.printStackTrace();
@@ -94,8 +99,15 @@ public class Login {
 		return cookiesAsMap;
 	}
 	
-	public static void main(String[] args) {
-		//loginAndGetCookie("181212631@163.com", "wwee13");
-		System.out.println(loginAndGetCookie("dayong213@163.com", "wwee13"));
-	}
+	 /**
+	  * return all cookies that all users'
+	  * @return cookie as map's List
+	  */
+	 public static LoopList<Map<String,String>> getCookiesList() {
+	         LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
+	         cookiesAsMapList.add(CookieAbout.loginAndGetCookie("181212631@163.com", "wwee13"));
+	         cookiesAsMapList.add(CookieAbout.getCookie());
+	         cookiesAsMapList.add(CookieAbout.getAnotherCookie());
+	         return cookiesAsMapList;
+	 }
 }

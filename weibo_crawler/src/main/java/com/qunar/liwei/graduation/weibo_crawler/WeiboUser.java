@@ -11,8 +11,6 @@ import java.util.Set;
 
 import org.jsoup.nodes.Document;
 
-import com.qunar.liwei.graduation.weibo_crawler.util.HtmlPageParse;
-
 class WeiboUser implements Serializable {
 	/**
 	 * 

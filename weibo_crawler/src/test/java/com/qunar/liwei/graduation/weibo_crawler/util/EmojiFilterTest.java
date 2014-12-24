@@ -1,4 +1,4 @@
-package com.qunar.liwei.graduation.weibo_crawler;
+package com.qunar.liwei.graduation.weibo_crawler.util;
 
 import org.junit.Test;
 

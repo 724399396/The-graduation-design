@@ -22,8 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import com.qunar.liwei.graduation.weibo_crawler.util.HtmlPageParse;
-
 public class WeiboCrawler {
 	
 	static BlockingQueue<String> urls = new LinkedBlockingQueue<>();
