@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,8 +107,15 @@ public class CookieAbout {
 	  * return all cookies that all users'
 	  * @return cookie as map's List
 	  */
-	 public static LoopList<Map<String,String>> getCookiesList() {
+	 public static LoopList<Map<String,String>> getCookiesLoopList() {
          LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
+         cookiesAsMapList.add(getCookie());
+         cookiesAsMapList.add(getAnotherCookie());
+         cookiesAsMapList.add(getCookie3());
+         return cookiesAsMapList;
+	 }
+	 public static List<Map<String,String>> getCookiesList() {
+         List<Map<String,String>> cookiesAsMapList = new LinkedList<>();
          cookiesAsMapList.add(getCookie());
          cookiesAsMapList.add(getAnotherCookie());
          cookiesAsMapList.add(getCookie3());

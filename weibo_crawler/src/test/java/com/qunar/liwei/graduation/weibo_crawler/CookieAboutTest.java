@@ -12,7 +12,7 @@ public class CookieAboutTest {
         @Test
         public void testGetCookie() {
                 LoopList<Map<String,String>> cookies
-                        = CookieAbout.getCookiesList();
+                        = CookieAbout.getCookiesLoopList();
                 System.out.println(cookies.next());
                 System.out.println(cookies.next());
                 System.out.println(cookies.next());

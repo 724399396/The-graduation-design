@@ -41,13 +41,13 @@ class WeiboUser implements Serializable {
 		Document doc = HtmlPageParse.getDoc(baseUrl);
 		while (doc == null)
 			doc = HtmlPageParse.getDoc(baseUrl);
-		FollowsUrlAndName naf = HtmlPageParse.getFollows(doc);
+		FollowsUrlAndName fuan = HtmlPageParse.getFollows(doc);
 		int pageNums = HtmlPageParse.getPageNums(doc);
 		Queue<String> tempUrls = new LinkedList<>();
 		for (int pageIndex = 1; pageIndex <= pageNums; pageIndex++)
 			tempUrls.add(baseUrl + "?page=" + pageIndex);
-		return new WeiboUser(baseUrl, tempUrls, naf.getName()
-				, naf.getFollowName().toString(), naf.getFollowUrl());
+		return new WeiboUser(baseUrl, tempUrls, fuan.getName()
+				, fuan.getFollowName().toString(), fuan.getFollowUrl());
 	}
 	
 	public static WeiboUser newFollowInstance(String baseUrl) 
@@ -64,8 +64,11 @@ class WeiboUser implements Serializable {
 				, null, null);
 	}
 
+
 	public boolean weiboIsNew(Weibo weibo) {
 		Timestamp date =  weibo.getTime();
+		if (date == null)
+			return false;
 		maxDate = dataManager.getMaxDate(name);
 		minDate = dataManager.getMinDate(name);	
 		System.out.println(name +  ":" + date);

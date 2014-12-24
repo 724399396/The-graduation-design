@@ -21,12 +21,15 @@ import org.jsoup.nodes.Document;
 import com.qunar.liwei.graduation.weibo_crawler.util.EmojiFilter;
 import com.qunar.liwei.graduation.weibo_crawler.util.LoopList;
 
+@SuppressWarnings("unused")
 public class TestWillDele {
         @SuppressWarnings("unchecked")
         public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
 
                 ObjectInputStream in = new ObjectInputStream(
                                 new FileInputStream("users.out"));
+                in.readObject();
+                in.readObject();
                 BlockingQueue<WeiboUser> users =  (BlockingQueue<WeiboUser>) in.readObject();
                 in.close();
                 Writer out = new OutputStreamWriter(

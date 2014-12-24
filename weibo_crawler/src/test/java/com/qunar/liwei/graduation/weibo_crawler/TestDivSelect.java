@@ -1,17 +1,13 @@
 package com.qunar.liwei.graduation.weibo_crawler;
 
-import java.io.File;
 import java.io.IOException;
 
 
 
 
-import java.sql.Timestamp;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;

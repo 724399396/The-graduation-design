@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -43,13 +42,15 @@ public class WeiboCrawler {
 					if (fetchedUrl.contains(url))
 						continue;
 					WeiboUser mainUser = WeiboUser.newMainInstance(url);
-					users.put(mainUser);
+					if (!users.contains(mainUser))
+						users.put(mainUser);
 					dataManager.saveFollow(mainUser);
 					System.out.printf("Main user %s has added in%n", 
 							mainUser.getName());
 					for (String followUrl : mainUser.getFollowsUrl()) {
 						WeiboUser followUser = WeiboUser.newFollowInstance(followUrl);
-						users.put(followUser);
+						if (!users.contains(followUser))
+							users.put(followUser);
 						System.out.printf("Flow user %s has add in%n", 
 								followUser.getName());
 					}
@@ -82,10 +83,11 @@ public class WeiboCrawler {
 							finish = true;
 						continue;
 					}
-					System.out.println("爬取用户： " + user.getName());
-System.out.println(user.getUrl());
+					String url = user.getUrl();
+					System.out.println("爬取用户： " + user.getName() 
+							+ " ,地址: " + url);
 					List<Weibo> weibolist = HtmlPageParse.
-							getWeibosFromPage(user.getUrl());
+							getWeibosFromPage(url);
 					for (Weibo weibo : weibolist) {
 						if (weibo == null)
 							continue;
@@ -191,22 +193,21 @@ System.out.println(user.getUrl());
 	}
 	
 	public static void start(List<String> urls, int threads) {
-		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {	
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				LogHelper.logInFile(t, e);
-			}
-		});
+//		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {	
+//			@Override
+//			public void uncaughtException(Thread t, Throwable e) {
+//				LogHelper.logInFile(t, e);
+//			}
+//		});
 		BlockingQueue<String> fetchingUrl = new LinkedBlockingQueue<>();
 		CopyOnWriteArraySet<String> fetchedUrl = new CopyOnWriteArraySet<>();
 		BlockingQueue<WeiboUser> users = new LinkedBlockingQueue<>();
 		BlockingQueue<Weibo> weibos = new LinkedBlockingQueue<>();
 		deSerialaze(fetchingUrl, fetchedUrl, users, weibos);
 		fetchingUrl.addAll(urls);
-		ExecutorService execSev = Executors.newFixedThreadPool(8);
+		ExecutorService execSev = Executors.newFixedThreadPool(3);
 		execSev.execute(new Filler(fetchingUrl, fetchedUrl, users));
-		for (int i = 0; i < 1; i++)
-			execSev.execute(new Fetcher(users, weibos));
+		execSev.execute(new Fetcher(users, weibos));
 		execSev.execute(new Saver(weibos));
 		Timer timer = new Timer();
 		timer.schedule(new Serializer(fetchingUrl, fetchedUrl, users, weibos), 
@@ -223,17 +224,21 @@ System.out.println(user.getUrl());
 	
 	public static void main(String[] args){
 		List<String> urls = new LinkedList<>();
-		urls.add("http://weibo.cn/pennyliang");
+		urls.add("http://weibo.cn/519721010");
 		start(urls, 2);
 		//test();
 	}
 	
 	@SuppressWarnings("unused")
-	private static void test() throws IOException {
-		ExecutorService exec = Executors.newCachedThreadPool();
+	private static void test(){
+		ExecutorService exec = Executors.newFixedThreadPool(1);
 		BlockingQueue<WeiboUser> users = new LinkedBlockingQueue<>();
 		BlockingQueue<Weibo> weibos = new LinkedBlockingQueue<>();
-		users.add(WeiboUser.newFollowInstance("http://weibo.cn/pennyliang"));
-		exec.execute(new Fetcher(users, null));
+		try {
+			users.add(WeiboUser.newFollowInstance("http://weibo.cn/pennyliang"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		exec.execute(new Fetcher(users, new LinkedBlockingQueue<Weibo>()));
 	}
 }
