@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public class LogHelper {
-        public static void logInFile(Thread t, Exception e) {
+        public static void logInFile(Thread t, Throwable e) {
                 FileHandler fh = null;
                 try {
                         File logDirectory = new File(".\\log");

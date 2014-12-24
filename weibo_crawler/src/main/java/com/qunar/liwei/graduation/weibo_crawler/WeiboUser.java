@@ -1,9 +1,8 @@
 package com.qunar.liwei.graduation.weibo_crawler;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.Writer;
+import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -12,17 +11,14 @@ import java.util.Set;
 import org.jsoup.nodes.Document;
 
 class WeiboUser implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 5000717139101568459L;
 	private String baseUrl;
 	private Queue<String> urls = new LinkedList<String>();
 	private String name;
 	private String followsName = null;
 	private Set<String> followsUrl = null;
-	private transient String maxDate;
-	private transient String minDate;
+	private transient Timestamp maxDate;
+	private transient Timestamp minDate;
 	DataManager dataManager = new DataManager();
 	private volatile int hashCode;
 	
@@ -45,7 +41,7 @@ class WeiboUser implements Serializable {
 		Document doc = HtmlPageParse.getDoc(baseUrl);
 		while (doc == null)
 			doc = HtmlPageParse.getDoc(baseUrl);
-		NameAndFollows naf = HtmlPageParse.parseMainUser(doc);
+		FollowsUrlAndName naf = HtmlPageParse.getFollows(doc);
 		int pageNums = HtmlPageParse.getPageNums(doc);
 		Queue<String> tempUrls = new LinkedList<>();
 		for (int pageIndex = 1; pageIndex <= pageNums; pageIndex++)
@@ -64,30 +60,18 @@ class WeiboUser implements Serializable {
 		Queue<String> tempUrls = new LinkedList<>();
 		for (int pageIndex = 1; pageIndex <= pageNums; pageIndex++)
 			tempUrls.add(baseUrl + "?page=" + pageIndex);
-		return new WeiboUser(baseUrl, tempUrls, HtmlPageParse.getName(doc)
+		return new WeiboUser(baseUrl, tempUrls, HtmlPageParse.getUserName(doc)
 				, null, null);
 	}
 
 	public boolean weiboIsNew(Weibo weibo) {
-		String date =  weibo.getTime();
+		Timestamp date =  weibo.getTime();
 		maxDate = dataManager.getMaxDate(name);
 		minDate = dataManager.getMinDate(name);	
 		System.out.println(name +  ":" + date);
 		System.out.println(minDate + "-" + maxDate);
-		try {
-			Writer writer = new FileWriter("log.txt", true);
-			writer.write(name +  ":" + date + "\r\n");
-			writer.write(minDate + "-" + maxDate + "\r\n");
-			writer.write(dataManager.isWeiboExist(weibo) + "\r\n\r\n");
-			writer.close();
-		} catch (IOException e) {
-		
-		}
 		if (minDate == null && maxDate == null) {
 			return true;
-		}
-		if (maxDate == null && minDate != null) {
-			maxDate = minDate;
 		}
 		if (date.compareTo(minDate) < 0 || date.compareTo(maxDate) > 0) {
 			return true;
@@ -96,7 +80,6 @@ class WeiboUser implements Serializable {
 		}
 	}
 	
-
 	// 获取user中存着的链接
 	public String getUrl() {
 		return urls.poll();
@@ -108,7 +91,6 @@ class WeiboUser implements Serializable {
 	public void addUrl(String url) {
 		urls.add(url);
 	}
-
 	public String getName() {
 		return name;
 	}
@@ -120,8 +102,6 @@ class WeiboUser implements Serializable {
 	public boolean isFinishCrawler() {
 		return urls.isEmpty();
 	}
-	
-	
 	
 	public Set<String> getFollowsUrl() {
 		return followsUrl;

@@ -46,13 +46,13 @@ public class TestWillDele {
 //                      System.out.println("有");
 //              }
 //              System.out.println(from);
-                //String text = "＂微博招亲啦[喜]＂：乐乐，泰迪贵宾，女，四岁半。有车[小汽车//              int pageN
- = 1000;
+                //String text = "＂微博招亲啦[喜]＂：乐乐，泰迪贵宾，女，四岁半。有车[小汽车//              
+          //      int pageN= 1000;
 //              pageNums = pageNums > 100 ? 100 : pageNums;
 //              System.out.println(pageNums);
                 //System.out.println(isNew());
-//              String emoji = "我发表了博客：《字符编码的那些事——原来C#、Java的一个char并不//              System.ou
-rintln(EmojiFilter.emojiFilt(emoji));
+//              String emoji = "我发表了博客：《字符编码的那些事——原来C#、Java的一个char并不//              
+// System.ourintln(EmojiFilter.emojiFilt(emoji));
 //              LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
 //              cookiesAsMapList.add(Login.loginAndGetCookie("181212631@163.com", "wwee13"));
 //              cookiesAsMapList.add(Login.getCookie());
@@ -81,34 +81,4 @@ rintln(EmojiFilter.emojiFilt(emoji));
 
         }
 
-        private static boolean isNew(){
-                DataManager dataManager = new DataManager();
-                                , null, null);
-                String name = weibo.getUserName();
-                String date = weibo.getTime();
-                String minDate = null;
-                String maxDate = null;
-                if (minDate == null || maxDate == null) {
-                        maxDate = dataManager.getMaxDate(name);
-                        minDate = dataManager.getMinDate(name);
-                }
-
-                System.out.println(name +  ":" + date);
-                System.out.println(minDate + "-" + maxDate);
-                if (minDate == null && maxDate == null) {
-                        return true;
-                }
-                if (maxDate == null && minDate != null) {
-                        maxDate = minDate;
-                }
-                if (date.compareTo(minDate) < 0 || date.compareTo(maxDate) > 0) {
-                        return true;
-                } else {
-                        if (dataManager.isWeiboExist(weibo)) {
-                                return false;
-                        } else {
-                                return true;
-                        }
-                }
-        }
 }

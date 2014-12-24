@@ -10,10 +10,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
-
-
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -82,8 +78,8 @@ public class CookieAbout {
 		}
 		return cookiesAsMap;
 	}
-	
-	public static Map<String,String> getCookie() {
+
+	public static Map<String,String> getCookie3() {
 		Map<String,String> cookiesAsMap = new LinkedHashMap<>();
 		cookiesAsMap.put("_T_WM", "a40f711f777c779bc7dc8aa07f5bc28e");
 		cookiesAsMap.put("SUB", "_2A255jrcgDeTxGeNN71QZ9yjKyz6IHXVbcNlorDV6PUJbrdBeLRb5kW0ewpAlxL9Yh2rrVXNbRnLbFWRxYw..");
@@ -98,16 +94,23 @@ public class CookieAbout {
 		cookiesAsMap.put("gsid_CTandWM", "4umX6d5612iUjLJqsCUhjmoaJ57");
 		return cookiesAsMap;
 	}
+	public static Map<String,String> getCookie() {
+		Map<String,String> cookiesAsMap = new LinkedHashMap<>();
+		cookiesAsMap.put("_T_WM", "a40f711f777c779bc7dc8aa07f5bc28e");
+		cookiesAsMap.put("SUB", "_2A255niQUDeTxGeNN6VcT9SnNzTuIHXVbYUxcrDV6PUJbrdBeLU_AkW1wvcrt_GsjMDv6PMI9BzD33Ry9NQ");
+		cookiesAsMap.put("gsid_CTandWM", "4uzYe7771EX0Elepj34fWmllf2H");
+		return cookiesAsMap;
+	}
 	
 	 /**
 	  * return all cookies that all users'
 	  * @return cookie as map's List
 	  */
 	 public static LoopList<Map<String,String>> getCookiesList() {
-	         LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
-	         cookiesAsMapList.add(CookieAbout.loginAndGetCookie("181212631@163.com", "wwee13"));
-	         cookiesAsMapList.add(CookieAbout.getCookie());
-	         cookiesAsMapList.add(CookieAbout.getAnotherCookie());
-	         return cookiesAsMapList;
+         LoopList<Map<String,String>> cookiesAsMapList = new LoopList<>();
+         cookiesAsMapList.add(getCookie());
+         cookiesAsMapList.add(getAnotherCookie());
+         cookiesAsMapList.add(getCookie3());
+         return cookiesAsMapList;
 	 }
 }

@@ -18,6 +18,6 @@ public class HtmlPageParseTest {
         @Test
         public void testGetWeiboList() {
                 System.out.println(
-                                PageParse.getWeibosFromPage("http://weibo.cn/pennyliang?page=1"));
+                                HtmlPageParse.getWeibosFromPage("http://weibo.cn/pennyliang?page=1"));
         }
 }

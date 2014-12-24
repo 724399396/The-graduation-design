@@ -2,173 +2,238 @@ package com.qunar.liwei.graduation.weibo_crawler;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Collections;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+
+import com.qunar.liwei.graduation.weibo_crawler.util.LogHelper;
+
 
 public class WeiboCrawler {
-	
-	static BlockingQueue<String> urls = new LinkedBlockingQueue<>();
-	static BlockingQueue<WeiboUser> users = new LinkedBlockingQueue<WeiboUser>();
-	static BlockingQueue<Weibo> weibos = new LinkedBlockingQueue<Weibo>();
-	
-	static List<WeiboUser> usersList = Collections.synchronizedList(new LinkedList<WeiboUser>());
-	static List<Weibo> weibosList = Collections.synchronizedList(new LinkedList<Weibo>());
-	
-	static DataManager dataManager = new DataManager();
-	
+	private static DataManager dataManager = new DataManager();
+	private static volatile boolean finish = false;
 	
 	static class Filler implements Runnable {
+		private final BlockingQueue<String> fetchingUrl;
+		private final CopyOnWriteArraySet<String> fetchedUrl;
+		private final BlockingQueue<WeiboUser> users;
+		public Filler(BlockingQueue<String> fetchingUrl,
+				CopyOnWriteArraySet<String> fetchedUrl,
+				BlockingQueue<WeiboUser> users) {
+			this.fetchingUrl = fetchingUrl;
+			this.fetchedUrl = fetchedUrl;
+			this.users = users;
+		}
 		public void run() {
-			while(!Thread.interrupted()) {
+			while(!fetchingUrl.isEmpty()) {
 				try {
-					String url = urls.take();
-					WeiboUser weiboUser = WeiboUser.newMainInstance(url);
-					users.put(weiboUser);
-					usersList.add(weiboUser);
-					System.out.println(weiboUser.getName() + " add in queue");
-					for (String followUrl : weiboUser.getFollowsUrl()) {
-						System.out.println("follow " + followUrl);
+					String url = fetchingUrl.poll();
+					if (fetchedUrl.contains(url))
+						continue;
+					WeiboUser mainUser = WeiboUser.newMainInstance(url);
+					users.put(mainUser);
+					dataManager.saveFollow(mainUser);
+					System.out.printf("Main user %s has added in%n", 
+							mainUser.getName());
+					for (String followUrl : mainUser.getFollowsUrl()) {
 						WeiboUser followUser = WeiboUser.newFollowInstance(followUrl);
 						users.put(followUser);
-						usersList.add(followUser);
+						System.out.printf("Flow user %s has add in%n", 
+								followUser.getName());
 					}
+					fetchedUrl.add(url);
 				} catch (InterruptedException e) {
 					System.err.println("填充线程获取url失败");
-					e.printStackTrace();
+					LogHelper.logInFile(Thread.currentThread(), e);
 				} catch (IOException e) {
 					System.err.println("创建主用户失败");
-					e.printStackTrace();
+					LogHelper.logInFile(Thread.currentThread(), e);
 				}
 			}
 		}
 	}
 	
 	static class Fetcher implements Runnable {
+		private final BlockingQueue<WeiboUser> users;
+		private final BlockingQueue<Weibo> weibos;
+		public Fetcher(BlockingQueue<WeiboUser> users,
+				BlockingQueue<Weibo> weibos) {
+			this.users = users;
+			this.weibos = weibos;
+		}
 		public void run() {
 			while(!Thread.interrupted()) {
 				try {
 					WeiboUser user = users.take();
-					usersList.remove(user);
-					if (user.isFinishCrawler())
+					if (user.isFinishCrawler()) {
+						if (users.isEmpty())
+							finish = true;
 						continue;
+					}
 					System.out.println("爬取用户： " + user.getName());
-					dataManager.saveFollow(user);
-					List<Weibo> weibolist = HtmlPageParse.getWeiboList(user.getUrl());
+System.out.println(user.getUrl());
+					List<Weibo> weibolist = HtmlPageParse.
+							getWeibosFromPage(user.getUrl());
 					for (Weibo weibo : weibolist) {
+						if (weibo == null)
+							continue;
 						if (user.weiboIsNew(weibo)) {
 							weibos.put(weibo);
-							weibosList.add(weibo);
 						}
 					}
 					users.put(user);
-					usersList.add(user);
 				} catch (InterruptedException e) {
 					System.err.println("爬网页线程中断");
-					e.printStackTrace();
-				} catch (IOException e) {
-					System.err.println("爬网页超时");
-					e.printStackTrace();
+					LogHelper.logInFile(Thread.currentThread(), e);
 				}
 			}
 		}
 	}
 	
 	static class Saver implements Runnable {
+		private final BlockingQueue<Weibo> weibos;
+		public Saver(BlockingQueue<Weibo> weibos) {
+			super();
+			this.weibos = weibos;
+		}
+
 		public void run() {
 			while (!Thread.interrupted()) {
 				try {
 					Weibo weibo = weibos.take();
 					dataManager.saveWeibo(weibo);
-					weibosList.remove(weibo);
 				} catch (InterruptedException e) {
 					System.err.println("存入数据库线程中断");
-					e.printStackTrace();
+					LogHelper.logInFile(Thread.currentThread(), e);
 				}
 			}
 		}
 	}
 	
 	private static class Serializer extends TimerTask {
+		private final BlockingQueue<String> fetchingUrl;
+		private final CopyOnWriteArraySet<String> fetchedUrl;
+		private final BlockingQueue<WeiboUser> users;
+		private final BlockingQueue<Weibo> weibos;
+		
+		
+		public Serializer(BlockingQueue<String> fetchingUrl,
+				CopyOnWriteArraySet<String> fetchedUrl,
+				BlockingQueue<WeiboUser> users, BlockingQueue<Weibo> weibos) {
+			super();
+			this.fetchingUrl = fetchingUrl;
+			this.fetchedUrl = fetchedUrl;
+			this.users = users;
+			this.weibos = weibos;
+		}
+
+
 		@Override
 		public void run() {
 			try {
 				ObjectOutputStream out = new ObjectOutputStream(
 						new FileOutputStream("users.out"));
-				out.writeObject(usersList);
-				out.writeObject(weibosList);
+				out.writeObject(fetchedUrl);
+				out.writeObject(fetchingUrl);		
+				out.writeObject(users);
+				out.writeObject(weibos);
 				out.flush();
 				out.close();
-				System.out.println("用户个数" + usersList.size());
-				System.out.println("剩余的还没存储:" + weibosList.size());
+				System.out.println("用户个数" + users.size());
+				System.out.println("剩余的还没存储:" + weibos.size());
 			} catch (IOException e) {
 				System.err.printf("序列化失败");
-				e.printStackTrace();
+				LogHelper.logInFile(Thread.currentThread(), e);
 			}
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void deSerialazer() throws FileNotFoundException, IOException, ClassNotFoundException {
-		File file = new File("users.out");
-		if (file.exists()) {
-			ObjectInputStream in = new ObjectInputStream(
-					new FileInputStream(file));
-			usersList =  (List<WeiboUser>) in.readObject();
-			weibosList = (List<Weibo>) in.readObject();
-			in.close();
-			users.addAll(usersList);
-			weibos.addAll(weibosList);
+	private static void deSerialaze(BlockingQueue<String> fetchingUrl,
+				CopyOnWriteArraySet<String> fetchedUrl, BlockingQueue<WeiboUser> users,
+				BlockingQueue<Weibo> weibos) {		
+			File file = new File("users.out");
+			if (file.exists()) {
+				ObjectInputStream in = null;
+				try {
+				in = new ObjectInputStream(
+						new FileInputStream(file));
+				fetchedUrl =  (CopyOnWriteArraySet<String>) in.readObject();
+				fetchingUrl = (BlockingQueue<String>) in.readObject();
+				users = (BlockingQueue<WeiboUser>) in.readObject();
+				weibos = (BlockingQueue<Weibo>) in.readObject();
+				} catch (IOException e) {
+					System.err.printf("反序列化失败");
+					LogHelper.logInFile(Thread.currentThread(), e);
+				} catch (ClassNotFoundException e) {
+					System.err.printf("反序列化失败");
+					LogHelper.logInFile(Thread.currentThread(), e);
+				} finally {
+					try {
+						in.close();
+					} catch (IOException e) {
+						LogHelper.logInFile(Thread.currentThread(), e);
+					}
+				}
+			}
+	}
+	
+	public static void start(List<String> urls, int threads) {
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {	
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				LogHelper.logInFile(t, e);
+			}
+		});
+		BlockingQueue<String> fetchingUrl = new LinkedBlockingQueue<>();
+		CopyOnWriteArraySet<String> fetchedUrl = new CopyOnWriteArraySet<>();
+		BlockingQueue<WeiboUser> users = new LinkedBlockingQueue<>();
+		BlockingQueue<Weibo> weibos = new LinkedBlockingQueue<>();
+		deSerialaze(fetchingUrl, fetchedUrl, users, weibos);
+		fetchingUrl.addAll(urls);
+		ExecutorService execSev = Executors.newFixedThreadPool(8);
+		execSev.execute(new Filler(fetchingUrl, fetchedUrl, users));
+		for (int i = 0; i < 1; i++)
+			execSev.execute(new Fetcher(users, weibos));
+		execSev.execute(new Saver(weibos));
+		Timer timer = new Timer();
+		timer.schedule(new Serializer(fetchingUrl, fetchedUrl, users, weibos), 
+				0, 1 * 30000);
+		while(!finish)
+			;
+		execSev.shutdownNow();
+		try {
+			execSev.awaitTermination(30, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			LogHelper.logInFile(Thread.currentThread(), e);
 		}
 	}
 	
-	public static void main(String[] args) throws InterruptedException, IOException, ClassNotFoundException {
-		urls.put("http://weibo.cn/pennyliang");
-		//deSerialazer();
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				try {
-					FileHandler fh = new FileHandler("exception_log.txt", true);
-					fh.setFormatter(new SimpleFormatter());//输出格式
-					Logger logger = Logger.getAnonymousLogger();
-					logger.addHandler(fh);
-					logger.log(Level.SEVERE, 
-							"Thread terminated with exception: " + t.getName()
-							+ " cause by" + e.getCause());
-				} catch (SecurityException | IOException e1) {
-					System.err.println("建立日志文件失败");
-					e1.printStackTrace();
-				}
-				
-			}
-		});
-		ExecutorService exec = Executors.newFixedThreadPool(3);	
-		exec.execute(new Filler());
-		exec.execute(new Fetcher());
-		exec.execute(new Saver());
-		Timer timer = new Timer();
-		timer.schedule(new Serializer(), 0, 1 * 60000);
-//		Thread.sleep(50000);
-//		while (!(urls.isEmpty() && weibos.isEmpty() && users.isEmpty()))
-//			;
-//		exec.shutdownNow();
-//		exec.awaitTermination(30, TimeUnit.SECONDS);
+	public static void main(String[] args){
+		List<String> urls = new LinkedList<>();
+		urls.add("http://weibo.cn/pennyliang");
+		start(urls, 2);
+		//test();
+	}
+	
+	@SuppressWarnings("unused")
+	private static void test() throws IOException {
+		ExecutorService exec = Executors.newCachedThreadPool();
+		BlockingQueue<WeiboUser> users = new LinkedBlockingQueue<>();
+		BlockingQueue<Weibo> weibos = new LinkedBlockingQueue<>();
+		users.add(WeiboUser.newFollowInstance("http://weibo.cn/pennyliang"));
+		exec.execute(new Fetcher(users, null));
 	}
 }

@@ -2,11 +2,11 @@ package com.qunar.liwei.graduation.weibo_crawler;
 
 import java.util.Set;
 
-public class NameAndFollows {
+public class FollowsUrlAndName {
 	private String name;
 	private Set<String> followName;
 	private Set<String> followUrl;
-	public NameAndFollows(String name, Set<String> followName,
+	public FollowsUrlAndName(String name, Set<String> followName,
 			Set<String> followUrl) {
 		super();
 		this.name = name;

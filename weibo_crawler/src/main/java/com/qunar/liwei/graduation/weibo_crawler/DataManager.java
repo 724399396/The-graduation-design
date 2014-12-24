@@ -3,7 +3,7 @@ package com.qunar.liwei.graduation.weibo_crawler;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.List;
+import java.sql.Timestamp;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -14,9 +14,6 @@ import com.qunar.liwei.graduation.weibo_crawler.util.EmojiFilter;
 
 
 public class DataManager implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4426822852419649539L;
 	static SqlSession session;
 	
@@ -44,7 +41,15 @@ public class DataManager implements Serializable {
 		session.commit();
 		return insertNums;
 	}
-		
+	
+	public boolean isWeiboExist(Weibo weibo) {
+		String statement = 
+				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.isWeiboExist";
+		Integer count = session.selectOne(statement, weibo);
+		session.commit();
+		return count > 0 ? true : false;
+	}	
+	
 	public int saveFollow(WeiboUser weiboUser) {
 		String statement = 
 				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.saveFollow";
@@ -65,43 +70,21 @@ public class DataManager implements Serializable {
 		return name == null ? false : true;
 	}
 	
-	public String getMaxDate(String userName) {
+	public Timestamp getMaxDate(String userName) {
 		String statement = 
 				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.getMaxDate";
-		String Date = session.selectOne(statement, userName);
+		Timestamp date = session.selectOne(statement, userName);
 		session.commit();
-		return Date;
+		return date;
 	}
 	
-	public String getMinDate(String userName) {
+	public Timestamp getMinDate(String userName) {
 		String statement = 
 				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.getMinDate";
-		String Date = session.selectOne(statement, userName);
+		Timestamp date = session.selectOne(statement, userName);
 		session.commit();
-		return Date;
+		return date;
 	}
 	
-	public boolean isWeiboExist(Weibo weibo) {
-		String statement = 
-				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.isWeiboExist";
-		Integer count = session.selectOne(statement, weibo);
-		session.commit();
-		return count > 0 ? true : false;
-	}
-	
-	public List<Bug> bugFixSelect() {
-		String statement = 
-				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.bugFixSelect";
-		List<Bug> list = session.selectList(statement);
-		session.commit();
-		return list;
-	}
-	public int bugFixUpdate(Bug bug) {
-		String statement = 
-				"com.qunar.liwei.graduation.weibo_crawler.weiboMapper.bugFixUpdate";
-		int update = session.update(statement, bug);
-		session.commit();
-		return update;
-	}
 	
 }
