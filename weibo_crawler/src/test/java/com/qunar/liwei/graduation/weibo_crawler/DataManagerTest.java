@@ -19,13 +19,12 @@ public class DataManagerTest {
 	
 	
 	@Before
-	@SuppressWarnings("static-access")
 	public void testCreateSession() throws IOException{
 		dataManager = new DataManager();
-		assertNotNull(dataManager.session);
+		assertNotNull(dataManager);
 	}
 	
-	@Test
+	//@Test
 	public void testSaveWeibo() {
 		dataManager = new DataManager();
 		int insertNums = dataManager.saveWeibo(
@@ -48,7 +47,7 @@ public class DataManagerTest {
 						"[李为,微博]", set));
 		System.out.println(insertNums);
 	}
-	@Test
+	//@Test
 	public void testIsWeiboExist() {
 		dataManager = new DataManager();
 		boolean exists = dataManager.isWeiboExist(new Weibo("梁斌penny", "最近总上围脖，不发表什么，也会看看名人们言论。也发现，以前天天上的校内，很少上了，也只有登录一些连接网站的时候，才想起来，我还有个校内账号，可以使用。", 
@@ -61,11 +60,23 @@ public class DataManagerTest {
 	
 	@Test
 	public void testGetMinDate() {
-		Timestamp minDate = dataManager.getMinDate("梁斌penny");
+		for (int i = 0; i < 10; i++)
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					Timestamp minDate = dataManager.getMinDate("林芝旅游局");
+					System.out.println(minDate);
+					Timestamp maxDate = dataManager.getMaxDate("林芝旅游局");
+					System.out.println(maxDate);
+				}
+			}).start();;
+		Timestamp minDate = dataManager.getMinDate("林芝旅游局");
 		System.out.println(minDate);
+		Timestamp maxDate = dataManager.getMaxDate("林芝旅游局");
+		System.out.println(maxDate);
 	}
 	
-	@Test
+	//@Test
 	public void testGetMaxDate() {
 		Timestamp maxDate = dataManager.getMaxDate("梁斌penny");
 		System.out.println(maxDate);

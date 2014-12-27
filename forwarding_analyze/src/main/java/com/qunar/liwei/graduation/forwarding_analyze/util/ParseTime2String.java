@@ -1,4 +1,4 @@
-package com.qunar.liwei.graduation.weibo_crawler.util;
+package com.qunar.liwei.graduation.forwarding_analyze.util;
 
 import java.util.Calendar;
 

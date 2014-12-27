@@ -1,4 +1,4 @@
-package com.qunar.liwei.graduation.mafengwo_crawler.util;
+package com.qunar.liwei.graduation.forwarding_analyze.util;
 
 public class EmojiFilter {
 	/**

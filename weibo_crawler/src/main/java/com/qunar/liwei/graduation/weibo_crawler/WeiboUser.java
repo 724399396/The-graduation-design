@@ -19,7 +19,17 @@ class WeiboUser implements Serializable {
 	private Set<String> followsUrl = null;
 	private transient Timestamp maxDate;
 	private transient Timestamp minDate;
-	DataManager dataManager = new DataManager();
+//	private static ThreadLocal<DataManager> dataManagerHolder
+//	= new ThreadLocal<DataManager>() {
+//		@Override
+//		public DataManager initialValue() {
+//			return new DataManager();
+//		}
+//	};
+//	public static DataManager getDataManager() {
+//		return dataManagerHolder.get();
+//	}
+	private static DataManager dataManager = new DataManager();
 	private volatile int hashCode;
 	
 	// 构造器和工厂方法

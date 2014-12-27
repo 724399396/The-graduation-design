@@ -3,10 +3,16 @@
 <mapper namespace="com.qunar.liwei.graduation.weibo_crawler.weiboMapper">
 	<cache/>
 	<insert id="saveWeibo" parameterType="Weibo" flushCache="true">
-		insert into sinaweibo_data
-		values(null,#{userName},#{commontText}, 
-		#{type},#{from},#{time},#{imageUrl})
+		insert into sinaweibo_liangbin_data
+		values(null,#{userName},#{type},#{commontText}, 
+		#{imageUrl},#{from},#{forwardReason},#{time},now())
 	</insert>
+	
+	<select id="isWeiboExist" parameterType="Weibo" resultType="Integer">
+		SELECT Count(id) FROM sinaweibo_liangbin_data
+		WHERE nickName=#{userName} AND weibo=#{commontText} AND
+		type=#{type} AND time=#{time}
+	</select>
 	
 	<insert id="saveFollow" parameterType="WeiboUser" flushCache="true">
 		insert into sinaweibo_follow
@@ -18,33 +24,16 @@
 		WHERE userName=#{name};
 	</select>
 	
-	<select id="getMinDate" parameterType="String" resultType="String">
-		select MIN(time) from sinaweibo_data
-		where userName=#{userName}
+	<select id="getMinDate" parameterType="String" resultType="java.sql.Timestamp">
+		select MIN(time) from sinaweibo_liangbin_data
+		where nickName=#{userName}
 	</select>
 	
-	<select id="getMaxDate" parameterType="String" resultType="String">
-		select MAX(time) from sinaweibo_data
-		where userName=#{userName}
+	<select id="getMaxDate" parameterType="String" resultType="java.sql.Timestamp">
+		select MAX(time) from sinaweibo_liangbin_data
+		where nickName=#{userName}
 	</select>
 	
-	<select id="isWeiboExist" parameterType="Weibo" resultType="Integer">
-		SELECT Count(id) FROM sinaweibo_data
-		WHERE userName=#{userName} AND commentText=#{commontText} AND
-		type=#{type} AND time=#{time}
-	</select>
+
 	
-	<select id="bugFixSelect" resultMap="resultMap">
-		SELECT id, imageUrl FROM sinaweibo_data
-		WHERE imageUrl IS NOT NULL
-	</select>
-	<resultMap type="Bug" id="resultMap">
-		<id property="id"  column="id"></id>
-		<result property="imageUrl" column="imageUrl"></result>
-	</resultMap>
-	<update id="bugFixUpdate" parameterType="Bug">
-		UPDATE sinaweibo_data
-		SET imageUrl = #{imageUrl} 
-		WHERE id = #{id}
-	</update>
 </mapper>

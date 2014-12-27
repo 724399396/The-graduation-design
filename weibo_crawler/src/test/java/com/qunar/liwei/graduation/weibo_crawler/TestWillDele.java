@@ -13,6 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
@@ -28,9 +31,14 @@ public class TestWillDele {
 
                 ObjectInputStream in = new ObjectInputStream(
                                 new FileInputStream("users.out"));
-                in.readObject();
-                in.readObject();
+            	CopyOnWriteArraySet<String> fetchedUrl = (CopyOnWriteArraySet<String>) in.readObject();
+        		//System.out.println(fetchedUrl);
+                BlockingQueue<String> fetchingUrl = (BlockingQueue<String>) in.readObject();
+                //System.out.println(fetchingUrl);
+                System.out.println(fetchingUrl.isEmpty());
                 BlockingQueue<WeiboUser> users =  (BlockingQueue<WeiboUser>) in.readObject();
+                System.out.println(users);
+                System.out.println(users.poll().isFinishCrawler());
                 in.close();
                 Writer out = new OutputStreamWriter(
                                 new FileOutputStream("all.txt"));
@@ -39,6 +47,20 @@ public class TestWillDele {
                         result += weiboUser.getName() + "\r\n";
                 out.write(users.size() + "\r\n" + result);
                 out.close();
+                ScheduledExecutorService sExec = Executors.newScheduledThreadPool(1);
+                sExec.scheduleAtFixedRate(new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("Hi!");
+					}
+				}, 0, 5, TimeUnit.SECONDS);
+                try {
+					TimeUnit.SECONDS.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                sExec.shutdownNow();
 //              int endIndex;
 //              String from = null;
 //              String type;

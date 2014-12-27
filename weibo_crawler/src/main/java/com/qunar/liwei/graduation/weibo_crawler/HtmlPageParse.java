@@ -41,38 +41,43 @@ public class HtmlPageParse {
      */
     public static synchronized Document getDoc(String url){
         Document doc = null;
-        try {
-            System.out.println(Thread.currentThread().getId() + ":" + count.incrementAndGet());
-            if (count.get() % 50 == 0){
-                    count.set(0);
-                    System.out.println("休眠 ,刚才用的:" + cookie );
-                    cookie = cookiesAsMapList.next();
-                    TimeUnit.SECONDS.sleep(30);
-                    System.out.println("休眠结束");
-            }
-        	doc = Jsoup.connect(url)
-        			.header("Accept", "text/html")
-                    .userAgent("Mozilla")
-                    .cookies(cookie)
-                    .timeout(4000)
-                    .get();
-        } catch (IOException e) {
-            System.err.printf("fetch %s failed%n" , url);
-            LogHelper.logInFile(Thread.currentThread(), e);
-        } catch (InterruptedException e) {
-            LogHelper.logInFile(Thread.currentThread(), e);
-            LogHelper.logInFile(Thread.currentThread(), e);
+        while (true) {
+        	try {
+	            System.out.println(Thread.currentThread().getId() + ":" + count.incrementAndGet());
+	            if (count.get() % 50 == 0){
+	                    count.set(0);
+	                    System.out.println("休眠 ,刚才用的:" + cookie );
+	                    cookie = cookiesAsMapList.next();
+	                    TimeUnit.SECONDS.sleep(30);
+	                    System.out.println("休眠结束");
+	            }
+	            if (url == null)
+	            	break;
+	        	doc = Jsoup.connect(url)
+	        			.header("Accept", "text/html")
+	                    .userAgent("Mozilla")
+	                    .cookies(cookie)
+	                    .timeout(4000)
+	                    .get();
+	        	break;
+	        } catch (IOException e) {
+	            System.err.printf("fetch %s failed%n" , url);
+	            LogHelper.logInFile(Thread.currentThread(), e);
+	        } catch (InterruptedException e) {
+	            LogHelper.logInFile(Thread.currentThread(), e);
+	            LogHelper.logInFile(Thread.currentThread(), e);
+	        }
         }
         return doc;
     }
     // 开始获取一个页面的微博的主程序和辅助程序
-    public static List<Weibo> getWeibosFromPage(String url){
+    public static List<Weibo> getWeibosFromPage(String url, String name){
         Document doc = getDoc(url);
-        while (doc == null)
-        	getDoc(url);
-        String name = getUserName(doc);
-        Elements weiboClasses = doc.select("div.c");
+//        String name = getUserName(doc);
         List<Weibo> weiboList = new ArrayList<>(10);
+        if (doc == null)
+        	return weiboList;
+        Elements weiboClasses = doc.select("div.c");
         for (Element weiboClass : weiboClasses) {
                 if (!weiboClass.id().contains("M_"))
                         continue;
